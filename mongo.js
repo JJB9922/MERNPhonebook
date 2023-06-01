@@ -13,7 +13,7 @@ mongoose.connect(url)
 
 const personsSchema = new mongoose.Schema({
     name: String,
-    number: String, 
+    number: String,
 })
 
 const Person = mongoose.model('Person', personsSchema)
@@ -26,6 +26,7 @@ if(process.argv.length === 5){
 
     person.save().then(result => {
         console.log(`Added ${process.argv[3]} number ${process.argv[4]} to phonebook`)
+        console.log(result)
         mongoose.connection.close()
     })
 } else {

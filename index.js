@@ -9,7 +9,7 @@ app.use(express.json())
 app.use(express.static('build'))
 app.use(cors())
 
-morgan.token('personcontent', function (req, res) {return JSON.stringify(req.body)})
+morgan.token('personcontent', function (req) {return JSON.stringify(req.body)})
 app.use(morgan(':method :url :status :res[content-length] - :response-time ms :personcontent'))
 
 const errorHandler = (error, request, response, next) => {
@@ -42,17 +42,17 @@ app.get('/api/persons/:id', (request, response, next) => {
             }
         })
         .catch(error => next(error))
-    
 })
 
-app.delete("/api/persons/:id", (request, response) => {
+app.delete("/api/persons/:id", (request, response, next) => {
     Person.findByIdAndRemove(request.params.id)
-    .then(result => {
-        response.status(204).end()
-    }).catch(error => next(error))
+        .then(result => {
+            response.status(204).end()
+            console.log(result)
+        }).catch(error => next(error))
 })
 
-app.get('/info', (request, response) => {
+app.get('/info', (request, response, next) => {
     const date = new Date()
     Person.countDocuments({}).then(docCount => {
         response.send(
@@ -61,7 +61,6 @@ app.get('/info', (request, response) => {
             ${date}`
         )
     }).catch(error => next(error))
-        
 })
 
 app.post('/api/persons', (request, response, next) => {
@@ -69,8 +68,7 @@ app.post('/api/persons', (request, response, next) => {
 
     if (body.name === "" || body.number === ""){
         console.log("Name or number can't be empty")
-        return response.status(400).json({error: "Missing a name or number"})
-        
+        return response.status(400).json({ error: "Missing a name or number" })
     } else {
         const person = new Person({
             name: body.name,
@@ -93,11 +91,10 @@ app.put('/api/persons/:id', (request, response, next) => {
         number: body.number,
     }
 
-    Person.findByIdAndUpdate(request.params.id, person, {new: true, runValidators: true, context: 'query'})
-        .then(updatedPerson =>{
+    Person.findByIdAndUpdate(request.params.id, person, { new: true, runValidators: true, context: 'query' })
+        .then(updatedPerson => {
             response.json(updatedPerson)
         }).catch(error => next(error))
-    
 })
 
 app.use(errorHandler)
